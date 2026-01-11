@@ -47,7 +47,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [selectedTenant, setSelectedTenant] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"student" | "technician" | "admin">("student");
+  const [selectedRole, setSelectedRole] = useState<"student" | "technician">("student");
   
   // Tenant registration
   const [tenantName, setTenantName] = useState("");
@@ -410,14 +410,13 @@ export default function Auth() {
 
                   <div className="space-y-2">
                     <Label>Role</Label>
-                    <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as any)}>
+                    <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as "student" | "technician")}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="student">Student</SelectItem>
                         <SelectItem value="technician">Technician</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
