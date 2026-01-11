@@ -94,7 +94,7 @@ export default function Complaints() {
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter);
+      query = query.eq("status", statusFilter as "open" | "in_progress" | "resolved");
     }
 
     const { data } = await query;
