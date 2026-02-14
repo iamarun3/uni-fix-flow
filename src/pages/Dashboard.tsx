@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FileText, Clock, CheckCircle, AlertCircle, TrendingUp, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { TechnicianWorkload } from "@/components/dashboard/TechnicianWorkload";
 
 interface DashboardStats {
   total: number;
@@ -184,6 +185,9 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
+
+        {/* Technician Workload - Admin only */}
+        {profile?.role === "admin" && <TechnicianWorkload />}
       </div>
     </DashboardLayout>
   );
