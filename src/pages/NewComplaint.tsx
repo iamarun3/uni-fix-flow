@@ -88,6 +88,24 @@ export default function NewComplaint() {
           details: `Priority: ${priority}, Category: ${category}`,
           performed_by: profile.id,
         });
+
+        // Notify admins about new complaint
+        const { data: admins } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("role", "admin");
+
+        if (admins) {
+          const notifs = admins.map((admin) => ({
+            tenant_id: profile.tenant_id,
+            user_id: admin.id,
+            title: "New Complaint",
+            message: `${profile.full_name || profile.email} raised: ${title}`,
+            type: "created",
+            complaint_id: inserted.id,
+          }));
+          await supabase.from("notifications").insert(notifs);
+        }
       }
       toast({
         title: "Complaint submitted",

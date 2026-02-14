@@ -10,9 +10,11 @@ import {
   Menu,
   X,
   ShieldCheck,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -33,7 +35,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Complaints", href: "/complaints", icon: FileText },
     ...(profile?.role === "admin"
-      ? [{ name: "Team", href: "/team", icon: Users }]
+      ? [
+          { name: "Team", href: "/team", icon: Users },
+          { name: "Settings", href: "/settings", icon: Settings },
+        ]
       : []),
   ];
 
@@ -84,6 +89,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link
                   key={item.name}
                   to={item.href}
+                  onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                     isActive
@@ -134,6 +140,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <Menu className="h-5 w-5 text-muted-foreground" />
           </button>
           <div className="flex-1" />
+          <NotificationBell />
         </header>
 
         <main className="p-4 lg:p-6">{children}</main>

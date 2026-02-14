@@ -72,10 +72,13 @@ export type Database = {
           category: string
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           description: string
           id: string
+          is_deleted: boolean
           location: string | null
           priority: Database["public"]["Enums"]["complaint_priority"]
+          resolved_at: string | null
           status: Database["public"]["Enums"]["complaint_status"]
           tenant_id: string
           title: string
@@ -86,10 +89,13 @@ export type Database = {
           category: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description: string
           id?: string
+          is_deleted?: boolean
           location?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
+          resolved_at?: string | null
           status?: Database["public"]["Enums"]["complaint_status"]
           tenant_id: string
           title: string
@@ -100,10 +106,13 @@ export type Database = {
           category?: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string
           id?: string
+          is_deleted?: boolean
           location?: string | null
           priority?: Database["public"]["Enums"]["complaint_priority"]
+          resolved_at?: string | null
           status?: Database["public"]["Enums"]["complaint_status"]
           tenant_id?: string
           title?: string
@@ -129,6 +138,64 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          complaint_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          tenant_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          complaint_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          tenant_id: string
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          complaint_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          tenant_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -166,6 +233,47 @@ export type Database = {
             foreignKeyName: "profiles_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_settings: {
+        Row: {
+          categories: Json
+          created_at: string
+          id: string
+          sla_high_hours: number
+          sla_low_hours: number
+          sla_medium_hours: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          categories?: Json
+          created_at?: string
+          id?: string
+          sla_high_hours?: number
+          sla_low_hours?: number
+          sla_medium_hours?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          categories?: Json
+          created_at?: string
+          id?: string
+          sla_high_hours?: number
+          sla_low_hours?: number
+          sla_medium_hours?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },

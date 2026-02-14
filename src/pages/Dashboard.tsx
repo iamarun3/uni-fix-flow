@@ -7,6 +7,7 @@ import { FileText, Clock, CheckCircle, AlertCircle, TrendingUp, BarChart3 } from
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { TechnicianWorkload } from "@/components/dashboard/TechnicianWorkload";
+import { AdvancedAnalytics } from "@/components/dashboard/AdvancedAnalytics";
 
 interface DashboardStats {
   total: number;
@@ -31,7 +32,7 @@ export default function Dashboard() {
   }, [profile]);
 
   const fetchStats = async () => {
-    const { data } = await supabase.from("complaints").select("status");
+    const { data } = await supabase.from("complaints").select("status, is_deleted").eq("is_deleted", false);
     if (data) {
       setStats({
         total: data.length,
@@ -78,17 +79,17 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => (
             <Card key={stat.title} className="shadow-card hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-3xl font-display font-bold text-foreground mt-1">{stat.value}</p>
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl sm:text-3xl font-display font-bold text-foreground mt-1">{stat.value}</p>
                   </div>
-                  <div className={`${stat.bgColor} p-3 rounded-xl`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className={`${stat.bgColor} p-2 sm:p-3 rounded-xl`}>
+                    <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />
                   </div>
                 </div>
               </CardContent>
@@ -185,6 +186,9 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
+
+        {/* Advanced Analytics - Admin/Supervisor */}
+        {(profile?.role === "admin" || profile?.role === "supervisor") && <AdvancedAnalytics />}
 
         {/* Technician Workload - Admin only */}
         {profile?.role === "admin" && <TechnicianWorkload />}
