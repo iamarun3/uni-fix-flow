@@ -14,6 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          complaint_id: string
+          created_at: string
+          details: string | null
+          id: string
+          performed_by: string | null
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          complaint_id: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          performed_by?: string | null
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          complaint_id?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          performed_by?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaints: {
         Row: {
           assigned_to: string | null

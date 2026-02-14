@@ -60,7 +60,7 @@ export default function NewComplaint() {
 
     setSubmitting(true);
 
-    const { error } = await supabase.from("complaints").insert({
+    const { data: inserted, error } = await supabase.from("complaints").insert({
       tenant_id: profile.tenant_id,
       created_by: profile.id,
       title,
@@ -68,7 +68,7 @@ export default function NewComplaint() {
       category: category.toLowerCase(),
       priority,
       location: location || null,
-    });
+    }).select().single();
 
     setSubmitting(false);
 
@@ -79,6 +79,16 @@ export default function NewComplaint() {
         variant: "destructive",
       });
     } else {
+      // Log activity
+      if (inserted) {
+        await supabase.from("activity_logs").insert({
+          complaint_id: inserted.id,
+          tenant_id: profile.tenant_id,
+          action: "Complaint created",
+          details: `Priority: ${priority}, Category: ${category}`,
+          performed_by: profile.id,
+        });
+      }
       toast({
         title: "Complaint submitted",
         description: "Your complaint has been recorded and will be addressed soon.",
