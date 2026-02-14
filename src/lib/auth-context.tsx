@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-type UserRole = 'admin' | 'student' | 'technician';
+type UserRole = 'admin' | 'student' | 'technician' | 'supervisor';
 
 interface Profile {
   id: string;
@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .maybeSingle();
 
     if (error) {
-      // Only log detailed errors in development
       if (import.meta.env.DEV) {
         console.error('Error fetching profile:', error);
       }
@@ -57,7 +56,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (profileData) {
       setProfile(profileData as Profile);
       
-      // Fetch tenant
       const { data: tenantData } = await supabase
         .from('tenants')
         .select('*')

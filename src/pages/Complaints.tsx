@@ -3,28 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
@@ -67,30 +54,20 @@ export default function Complaints() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && !profile) {
-      navigate("/auth");
-    }
+    if (!loading && !profile) navigate("/auth");
   }, [profile, loading, navigate]);
 
   useEffect(() => {
     if (profile) {
       fetchComplaints();
-      if (profile.role === "admin") {
-        fetchTechnicians();
-      }
+      if (profile.role === "admin") fetchTechnicians();
     }
   }, [profile, statusFilter]);
 
   const fetchComplaints = async () => {
     let query = supabase
       .from("complaints")
-      .select(
-        `
-        *,
-        created_by_profile:profiles!complaints_created_by_fkey(full_name),
-        assigned_to_profile:profiles!complaints_assigned_to_fkey(full_name)
-      `
-      )
+      .select(`*, created_by_profile:profiles!complaints_created_by_fkey(full_name), assigned_to_profile:profiles!complaints_assigned_to_fkey(full_name)`)
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
@@ -98,44 +75,21 @@ export default function Complaints() {
     }
 
     const { data } = await query;
-    if (data) {
-      setComplaints(data as Complaint[]);
-    }
+    if (data) setComplaints(data as Complaint[]);
   };
 
   const fetchTechnicians = async () => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("id, full_name, email")
-      .eq("role", "technician");
-
-    if (data) {
-      setTechnicians(data);
-    }
+    const { data } = await supabase.from("profiles").select("id, full_name, email").eq("role", "technician");
+    if (data) setTechnicians(data);
   };
 
   const handleAssign = async () => {
     if (!selectedComplaint || !selectedTechnician) return;
-
-    const { error } = await supabase
-      .from("complaints")
-      .update({
-        assigned_to: selectedTechnician,
-        status: "in_progress",
-      })
-      .eq("id", selectedComplaint.id);
-
+    const { error } = await supabase.from("complaints").update({ assigned_to: selectedTechnician, status: "in_progress" }).eq("id", selectedComplaint.id);
     if (error) {
-      toast({
-        title: "Failed to assign",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Failed to assign", description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Complaint assigned",
-        description: "The technician has been notified.",
-      });
+      toast({ title: "Complaint assigned", description: "The technician has been notified." });
       setAssignDialogOpen(false);
       setSelectedTechnician("");
       fetchComplaints();
@@ -143,21 +97,11 @@ export default function Complaints() {
   };
 
   const handleStatusUpdate = async (complaintId: string, newStatus: "open" | "in_progress" | "resolved") => {
-    const { error } = await supabase
-      .from("complaints")
-      .update({ status: newStatus })
-      .eq("id", complaintId);
-
+    const { error } = await supabase.from("complaints").update({ status: newStatus }).eq("id", complaintId);
     if (error) {
-      toast({
-        title: "Failed to update status",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Status updated",
-      });
+      toast({ title: "Status updated" });
       fetchComplaints();
     }
   };
@@ -170,19 +114,22 @@ export default function Complaints() {
     );
   }
 
+  const canAssign = profile?.role === "admin";
+  const isViewOnly = profile?.role === "supervisor";
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl font-semibold text-foreground">
-              Complaints
-            </h1>
+            <h1 className="font-display text-2xl font-semibold text-foreground">Complaints</h1>
             <p className="text-muted-foreground mt-1">
               {profile?.role === "student"
                 ? "View and track your submitted complaints"
                 : profile?.role === "technician"
                 ? "View and resolve assigned complaints"
+                : profile?.role === "supervisor"
+                ? "Monitor all campus complaints"
                 : "Manage all campus complaints"}
             </p>
           </div>
@@ -201,10 +148,7 @@ export default function Complaints() {
             </Select>
 
             {profile?.role === "student" && (
-              <Button
-                onClick={() => navigate("/complaints/new")}
-                className="gradient-primary"
-              >
+              <Button onClick={() => navigate("/complaints/new")} className="gradient-primary">
                 <Plus className="mr-2 h-4 w-4" />
                 New Complaint
               </Button>
@@ -212,55 +156,38 @@ export default function Complaints() {
           </div>
         </div>
 
-        <Card className="shadow-card">
+        <Card className="shadow-card overflow-hidden">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  {profile?.role !== "student" && (
-                    <TableHead>Reported By</TableHead>
-                  )}
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold">Title</TableHead>
+                  <TableHead className="font-semibold">Category</TableHead>
+                  <TableHead className="font-semibold">Priority</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Created</TableHead>
+                  {profile?.role !== "student" && <TableHead className="font-semibold">Reported By</TableHead>}
+                  <TableHead className="font-semibold">Assigned To</TableHead>
+                  <TableHead className="text-right font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {complaints.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={profile?.role !== "student" ? 8 : 7}
-                      className="text-center py-8 text-muted-foreground"
-                    >
+                    <TableCell colSpan={profile?.role !== "student" ? 8 : 7} className="text-center py-12 text-muted-foreground">
                       No complaints found
                     </TableCell>
                   </TableRow>
                 ) : (
                   complaints.map((complaint) => (
-                    <TableRow key={complaint.id}>
-                      <TableCell className="font-medium">
-                        {complaint.title}
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        {complaint.category}
-                      </TableCell>
-                      <TableCell>
-                        <PriorityBadge priority={complaint.priority} />
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={complaint.status} />
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(complaint.created_at), "MMM d, yyyy")}
-                      </TableCell>
+                    <TableRow key={complaint.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell className="font-medium">{complaint.title}</TableCell>
+                      <TableCell className="capitalize">{complaint.category}</TableCell>
+                      <TableCell><PriorityBadge priority={complaint.priority} /></TableCell>
+                      <TableCell><StatusBadge status={complaint.status} /></TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{format(new Date(complaint.created_at), "MMM d, yyyy")}</TableCell>
                       {profile?.role !== "student" && (
-                        <TableCell>
-                          {complaint.created_by_profile?.full_name || "Unknown"}
-                        </TableCell>
+                        <TableCell>{complaint.created_by_profile?.full_name || "Unknown"}</TableCell>
                       )}
                       <TableCell>
                         {complaint.assigned_to_profile?.full_name || (
@@ -269,53 +196,26 @@ export default function Complaints() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedComplaint(complaint);
-                              setDetailDialogOpen(true);
-                            }}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => { setSelectedComplaint(complaint); setDetailDialogOpen(true); }}>
                             <Eye className="h-4 w-4" />
                           </Button>
 
-                          {profile?.role === "admin" && !complaint.assigned_to && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedComplaint(complaint);
-                                setAssignDialogOpen(true);
-                              }}
-                            >
+                          {canAssign && !complaint.assigned_to && (
+                            <Button variant="outline" size="sm" onClick={() => { setSelectedComplaint(complaint); setAssignDialogOpen(true); }}>
                               <UserPlus className="h-4 w-4 mr-1" />
                               Assign
                             </Button>
                           )}
 
-                          {profile?.role === "technician" &&
-                            complaint.assigned_to === profile.id &&
-                            complaint.status !== "resolved" && (
-                              <Select
-                                value={complaint.status}
-                                onValueChange={(value: "open" | "in_progress" | "resolved") =>
-                                  handleStatusUpdate(complaint.id, value)
-                                }
-                              >
-                                <SelectTrigger className="w-[130px]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="in_progress">
-                                    In Progress
-                                  </SelectItem>
-                                  <SelectItem value="resolved">
-                                    Resolved
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
+                          {profile?.role === "technician" && complaint.assigned_to === profile.id && complaint.status !== "resolved" && (
+                            <Select value={complaint.status} onValueChange={(value: "open" | "in_progress" | "resolved") => handleStatusUpdate(complaint.id, value)}>
+                              <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -330,36 +230,22 @@ export default function Complaints() {
       {/* Assign Dialog */}
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Assign Technician</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Assign Technician</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-4">
             <p className="text-sm text-muted-foreground">
               Assign a technician to handle: <strong>{selectedComplaint?.title}</strong>
             </p>
             <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select technician" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Select technician" /></SelectTrigger>
               <SelectContent>
                 {technicians.map((tech) => (
-                  <SelectItem key={tech.id} value={tech.id}>
-                    {tech.full_name || tech.email}
-                  </SelectItem>
+                  <SelectItem key={tech.id} value={tech.id}>{tech.full_name || tech.email}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAssign}
-                disabled={!selectedTechnician}
-                className="gradient-primary"
-              >
-                Assign
-              </Button>
+              <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleAssign} disabled={!selectedTechnician} className="gradient-primary">Assign</Button>
             </div>
           </div>
         </DialogContent>
@@ -368,71 +254,42 @@ export default function Complaints() {
       {/* Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{selectedComplaint?.title}</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{selectedComplaint?.title}</DialogTitle></DialogHeader>
           {selectedComplaint && (
             <div className="space-y-4 pt-2">
               <div className="flex gap-2">
                 <StatusBadge status={selectedComplaint.status} />
                 <PriorityBadge priority={selectedComplaint.priority} />
               </div>
-
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">
-                  Description
-                </p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
                 <p className="text-foreground">{selectedComplaint.description}</p>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    Category
-                  </p>
-                  <p className="text-foreground capitalize">
-                    {selectedComplaint.category}
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Category</p>
+                  <p className="text-foreground capitalize">{selectedComplaint.category}</p>
                 </div>
                 {selectedComplaint.location && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
-                      Location
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Location</p>
                     <p className="text-foreground">{selectedComplaint.location}</p>
                   </div>
                 )}
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    Reported By
-                  </p>
-                  <p className="text-foreground">
-                    {selectedComplaint.created_by_profile?.full_name || "Unknown"}
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Reported By</p>
+                  <p className="text-foreground">{selectedComplaint.created_by_profile?.full_name || "Unknown"}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    Assigned To
-                  </p>
-                  <p className="text-foreground">
-                    {selectedComplaint.assigned_to_profile?.full_name || "Unassigned"}
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Assigned To</p>
+                  <p className="text-foreground">{selectedComplaint.assigned_to_profile?.full_name || "Unassigned"}</p>
                 </div>
               </div>
-
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">
-                  Created At
-                </p>
-                <p className="text-foreground">
-                  {format(
-                    new Date(selectedComplaint.created_at),
-                    "MMMM d, yyyy 'at' h:mm a"
-                  )}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Created At</p>
+                <p className="text-foreground">{format(new Date(selectedComplaint.created_at), "MMMM d, yyyy 'at' h:mm a")}</p>
               </div>
             </div>
           )}
