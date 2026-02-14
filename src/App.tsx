@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Complaints from "./pages/Complaints";
 import NewComplaint from "./pages/NewComplaint";
 import Team from "./pages/Team";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/complaints" element={<Complaints />} />
             <Route path="/complaints/new" element={<NewComplaint />} />
             <Route path="/team" element={<Team />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
