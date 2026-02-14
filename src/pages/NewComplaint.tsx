@@ -27,11 +27,9 @@ import { ArrowLeft } from "lucide-react";
 const CATEGORIES = [
   "Electrical",
   "Plumbing",
-  "HVAC",
-  "Cleaning",
-  "Security",
-  "IT/Network",
-  "Furniture",
+  "Internet",
+  "Classroom Maintenance",
+  "Hostel Issue",
   "Other",
 ];
 
