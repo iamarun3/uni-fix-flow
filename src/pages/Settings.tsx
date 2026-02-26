@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -107,39 +107,12 @@ export default function Settings() {
     }
   };
 
-  const clampSLA = (value: number, max: number) => {
-    const parsed = Math.floor(value);
-    if (isNaN(parsed) || parsed < 1) return 1;
-    if (parsed > max) return max;
-    return parsed;
-  };
-
-  const handleSLAChange = (field: keyof TenantSettings, value: string, max: number) => {
-    const clamped = clampSLA(parseInt(value), max);
-    setSettings((s) => ({ ...s, [field]: clamped }));
-  };
-
   const addCategory = () => {
     const trimmed = newCategory.trim();
-    if (!trimmed) return;
-    if (trimmed.length > 50) {
-      toast({ title: "Category name too long", description: "Maximum 50 characters allowed.", variant: "destructive" });
-      return;
+    if (trimmed && !settings.categories.includes(trimmed)) {
+      setSettings((s) => ({ ...s, categories: [...s.categories, trimmed] }));
+      setNewCategory("");
     }
-    if (!/^[a-zA-Z0-9\s\-&]+$/.test(trimmed)) {
-      toast({ title: "Invalid category name", description: "Only letters, numbers, spaces, hyphens and & allowed.", variant: "destructive" });
-      return;
-    }
-    if (settings.categories.length >= 20) {
-      toast({ title: "Too many categories", description: "Maximum 20 categories allowed.", variant: "destructive" });
-      return;
-    }
-    if (settings.categories.includes(trimmed)) {
-      toast({ title: "Category already exists", variant: "destructive" });
-      return;
-    }
-    setSettings((s) => ({ ...s, categories: [...s.categories, trimmed] }));
-    setNewCategory("");
   };
 
   const removeCategory = (cat: string) => {
@@ -199,33 +172,27 @@ export default function Settings() {
                 <Input
                   type="number"
                   min={1}
-                  max={720}
                   value={settings.sla_high_hours}
-                  onChange={(e) => handleSLAChange("sla_high_hours", e.target.value, 720)}
+                  onChange={(e) => setSettings((s) => ({ ...s, sla_high_hours: parseInt(e.target.value) || 1 }))}
                 />
-                <p className="text-xs text-muted-foreground">1–720 hours (max 30 days)</p>
               </div>
               <div className="space-y-2">
                 <Label>Medium Priority (hours)</Label>
                 <Input
                   type="number"
                   min={1}
-                  max={720}
                   value={settings.sla_medium_hours}
-                  onChange={(e) => handleSLAChange("sla_medium_hours", e.target.value, 720)}
+                  onChange={(e) => setSettings((s) => ({ ...s, sla_medium_hours: parseInt(e.target.value) || 1 }))}
                 />
-                <p className="text-xs text-muted-foreground">1–720 hours (max 30 days)</p>
               </div>
               <div className="space-y-2">
                 <Label>Low Priority (hours)</Label>
                 <Input
                   type="number"
                   min={1}
-                  max={2160}
                   value={settings.sla_low_hours}
-                  onChange={(e) => handleSLAChange("sla_low_hours", e.target.value, 2160)}
+                  onChange={(e) => setSettings((s) => ({ ...s, sla_low_hours: parseInt(e.target.value) || 1 }))}
                 />
-                <p className="text-xs text-muted-foreground">1–2160 hours (max 90 days)</p>
               </div>
             </div>
           </CardContent>
